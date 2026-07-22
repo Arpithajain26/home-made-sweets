@@ -1,0 +1,133 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { checkoutSchema, type CheckoutFormValues } from '../validation/checkoutSchema';
+import { useCartStore } from '../../cart/store/useCartStore';
+import { useNavigate } from 'react-router-dom';
+
+type FieldKey = keyof CheckoutFormValues;
+
+const FIELD_KEYS: { name: FieldKey; required?: boolean; type?: string }[] = [
+  { name: 'fullName', required: true },
+  { name: 'email', type: 'email', required: true },
+  { name: 'phone', type: 'tel', required: true },
+  { name: 'addressLine1', required: true },
+  { name: 'addressLine2' },
+  { name: 'city', required: true },
+  { name: 'postcode', required: true },
+  { name: 'country', required: true },
+  { name: 'notes' },
+];
+
+export type PaymentMethodType = 'upi' | 'card' | 'cod';
+
+const CheckoutForm: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { items, getTotalPrice, clearCart } = useCartStore();
+
+  const [values, setValues] = useState<Partial<CheckoutFormValues>>({});
+  const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('upi');
+
+  const handleChange = (field: FieldKey, value: string) => {
+    setValues((v) => ({ ...v, [field]: value }));
+    setErrors((e) => ({ ...e, [field]: undefined }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = checkoutSchema.safeParse(values);
+    if (!result.success) {
+      const fieldErrors: Partial<Record<FieldKey, string>> = {};
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as FieldKey;
+        fieldErrors[key] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setSubmitting(true);
+    
+    // Construct order details for WhatsApp
+    const orderId = `ORD-${Math.floor(Math.random() * 1000000)}`;
+    const total = getTotalPrice();
+    const itemList = items.map(i => `${i.quantity}x ${i.name}`).join('%0A');
+    
+    const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${values.fullName}%0A*Phone:* ${values.phone}%0A*Address:* ${values.addressLine1}, ${values.city}, ${values.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
+
+    const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+
+    // Simulate API call
+    await new Promise((res) => setTimeout(res, 800));
+    
+    // Save link to session storage so success page can read it before clearing cart
+    sessionStorage.setItem('lastOrderWhatsappLink', whatsappLink);
+    sessionStorage.setItem('lastOrderId', orderId);
+    
+    clearCart();
+    navigate('/order-success');
+  };
+
+  return (
+    <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto">
+      <div className="space-y-4">
+        {FIELD_KEYS.map(({ name, type = 'text', required }) => (
+          <div key={name}>
+            <label htmlFor={`field-${name}`} className="block text-sm font-medium text-amber-900 mb-1">
+              {t(`checkout.fields.${name}`)}
+              {required && <span className="text-red-500 ml-0.5">*</span>}
+            </label>
+            <input
+              id={`field-${name}`}
+              name={name}
+              type={type}
+              value={(values[name] as string) ?? ''}
+              onChange={(e) => handleChange(name, e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                errors[name] ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-white'
+              }`}
+            />
+            {errors[name] && (
+              <p className="text-xs text-red-500 mt-1">{errors[name]}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Payment Methods Section */}
+      <div className="border-t border-amber-200 pt-6">
+        <h3 className="text-lg font-bold text-amber-900 mb-3">{t('checkout.paymentMethod')}</h3>
+        <div className="space-y-3">
+          {(['upi', 'card', 'cod'] as const).map((method) => (
+            <label key={method} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${paymentMethod === method ? 'border-amber-500 bg-amber-50' : 'border-amber-200 bg-white hover:bg-amber-50/50'}`}>
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={method}
+                checked={paymentMethod === method}
+                onChange={() => setPaymentMethod(method)}
+                className="w-4 h-4 text-amber-600 border-amber-300 focus:ring-amber-500"
+              />
+              <span className="ml-3 text-sm font-medium text-amber-950">
+                {t(`checkout.paymentMethods.${method}`)}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <button
+        id="submit-checkout-btn"
+        type="submit"
+        disabled={submitting}
+        className="w-full bg-amber-800 hover:bg-amber-900 disabled:opacity-60 text-white font-semibold py-3 rounded-lg transition-colors mt-2 text-lg shadow-sm"
+      >
+        {submitting ? t('checkout.placingOrder') : t('checkout.placeOrder')}
+      </button>
+    </form>
+  );
+};
+
+export default CheckoutForm;

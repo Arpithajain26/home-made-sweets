@@ -59,7 +59,26 @@ const AuthModal: React.FC = () => {
       setFormError('Please enter a valid email address.');
       return;
     }
-    if (tab === 'signup' && name.trim().length < 2) {
+
+    // FOR SIGN IN: Directly log in without OTP!
+    if (tab === 'signin') {
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        setStep('success');
+        setTimeout(() => {
+          login({
+            id: crypto.randomUUID(),
+            email,
+            name: name || email.split('@')[0],
+          });
+        }, 800);
+      }, 400);
+      return;
+    }
+
+    // FOR SIGN UP: Send OTP code via email & require verification
+    if (name.trim().length < 2) {
       setFormError('Name must be at least 2 characters.');
       return;
     }
@@ -175,8 +194,8 @@ const AuthModal: React.FC = () => {
               </h2>
               <p className="text-sm text-amber-700 mb-6">
                 {tab === 'signin'
-                  ? "We'll send a one-time code to your email."
-                  : 'Create your account in seconds — no password needed.'}
+                  ? 'Enter your email address to sign in instantly.'
+                  : "We'll send a 6-digit OTP code to verify your email."}
               </p>
 
               <form id="auth-form" onSubmit={handleSendOtp} className="space-y-4">
@@ -231,9 +250,11 @@ const AuthModal: React.FC = () => {
                   className="w-full flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors"
                 >
                   {loading ? (
-                    <><Loader size={16} className="animate-spin" /> Sending OTP…</>
+                    <><Loader size={16} className="animate-spin" /> {tab === 'signin' ? 'Signing in…' : 'Sending OTP…'}</>
+                  ) : tab === 'signin' ? (
+                    <><User size={16} /> Sign In</>
                   ) : (
-                    <><Mail size={16} /> Send OTP</>
+                    <><Mail size={16} /> Send OTP to Register</>
                   )}
                 </button>
               </form>

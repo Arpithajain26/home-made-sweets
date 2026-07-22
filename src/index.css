@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-amber-50: #fdf7f4;
+  --color-amber-100: #f5e8e0;
+  --color-amber-200: #e6c8b5;
+  --color-amber-300: #d2a082;
+  --color-amber-400: #b97852;
+  --color-amber-500: #9c5b36;
+  --color-amber-600: #7f4225;
+  --color-amber-700: #633019;
+  --color-amber-800: #4a2010;
+  --color-amber-900: #331409;
+  --color-amber-950: #1f0a04;
+}
+
 @layer utilities {
   .preserve-3d {
     transform-style: preserve-3d;
@@ -16,4 +30,31 @@
   .perspective-1000 {
     perspective: 1000px;
   }
+}
+
+/* Custom 3D & Rich Brown styling enhancements */
+body {
+  background-color: #fdf7f4;
+  color: #1f0a04;
+  font-family: inherit;
+  overflow-x: hidden;
+}
+
+/* Smooth selection highlight */
+::selection {
+  background-color: #4a2010;
+  color: #fdf7f4;
+}
+
+/* Glassmorphic brown cards */
+.glass-brown {
+  background: rgba(74, 32, 16, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(127, 66, 37, 0.15);
+}
+
+.glass-brown-dark {
+  background: rgba(31, 10, 4, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(185, 120, 82, 0.25);
 }

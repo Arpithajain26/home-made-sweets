@@ -135,64 +135,73 @@ const CheckoutForm: React.FC = () => {
       }
 
       // MODE B: ONLINE PAYMENTS (UPI / Card via Razorpay)
-      try {
-        const res = await fetch(`${API_URL}/api/payment/create-order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: total }),
-        });
+      const res = await fetch(`${API_URL}/api/payment/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total }),
+      });
 
-        if (res.ok) {
-          const razorpayOrder = await res.json();
-          const options = {
-            key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_dummyKey",
-            amount: razorpayOrder.amount,
-            currency: "INR",
-            name: "SweetDelights",
-            description: `Order #${orderId}`,
-            order_id: razorpayOrder.id,
-            handler: async (response: any) => {
-              try {
-                const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(response),
-                });
-                const verifyData = await verifyRes.json();
-                if (verifyData.success) {
-                  await saveOrderToBackend(orderPayload);
-                }
-              } catch (vErr) {
-                console.info("Backend verification skipped in standalone mode.");
-              }
-              finishCheckout(orderId, values, total, items);
-            },
-            prefill: {
-              name: values.fullName,
-              email: values.email,
-              contact: values.phone,
-            },
-            theme: {
-              color: "#78350f",
-            },
-          };
-
-          if (window.Razorpay) {
-            const rzp = new window.Razorpay(options);
-            rzp.open();
-            return;
-          }
-        }
-      } catch (netErr) {
-        console.info("Payment backend offline, placing order via WhatsApp confirmation fallback.");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(
+          errData.message ||
+            "Failed to create Razorpay payment order. Please verify your backend server & Razorpay API keys.",
+        );
       }
 
-      // If backend payment server is offline or window.Razorpay is unavailable, proceed seamlessly to order success & WhatsApp confirmation
-      await saveOrderToBackend(orderPayload);
-      finishCheckout(orderId, values, total, items);
+      const razorpayOrder = await res.json();
+
+      if (!window.Razorpay) {
+        alert("Razorpay SDK failed to load. Please check your internet connection.");
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_dummyKey",
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency || "INR",
+        name: "SweetDelights",
+        description: `Order #${orderId}`,
+        order_id: razorpayOrder.id,
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              await saveOrderToBackend(orderPayload);
+              finishCheckout(orderId, values, total, items);
+            } else {
+              alert("Payment verification failed. Please try again.");
+            }
+          } catch (vErr) {
+            console.error("Payment verification error:", vErr);
+            await saveOrderToBackend(orderPayload);
+            finishCheckout(orderId, values, total, items);
+          }
+        },
+        prefill: {
+          name: values.fullName,
+          email: values.email,
+          contact: values.phone,
+        },
+        theme: {
+          color: "#78350f",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error: any) {
       console.error("❌ Checkout Error:", error);
-      finishCheckout(orderId, values, total, items);
+      alert(
+        error?.message ||
+          "Error processing online payment. Make sure your backend server is active and Razorpay keys are configured.",
+      );
     } finally {
       setSubmitting(false);
     }

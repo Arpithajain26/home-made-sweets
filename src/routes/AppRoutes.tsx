@@ -5,6 +5,7 @@ import Shop from '../pages/Shop';
 import Checkout from '../pages/Checkout';
 import OrderSuccess from '../pages/OrderSuccess';
 import NotFound from '../pages/NotFound';
+import AdminOrders from '../pages/AdminOrders';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/order-success" element={<OrderSuccess />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/admin/orders" element={<AdminOrders />} />
     </Routes>
   );
 };

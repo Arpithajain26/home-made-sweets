@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { checkoutSchema, type CheckoutFormValues } from '../validation/checkoutSchema';
-import { useCartStore } from '../../cart/store/useCartStore';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  checkoutSchema,
+  type CheckoutFormValues,
+} from "../validation/checkoutSchema";
+import { useCartStore } from "../../cart/store/useCartStore";
+import { useNavigate } from "react-router-dom";
 
 type FieldKey = keyof CheckoutFormValues;
 
 const FIELD_KEYS: { name: FieldKey; required?: boolean; type?: string }[] = [
-  { name: 'fullName', required: true },
-  { name: 'email', type: 'email', required: true },
-  { name: 'phone', type: 'tel', required: true },
-  { name: 'addressLine1', required: true },
-  { name: 'addressLine2' },
-  { name: 'city', required: true },
-  { name: 'postcode', required: true },
-  { name: 'country', required: true },
-  { name: 'notes' },
+  { name: "fullName", required: true },
+  { name: "email", type: "email", required: true },
+  { name: "phone", type: "tel", required: true },
+  { name: "addressLine1", required: true },
+  { name: "addressLine2" },
+  { name: "city", required: true },
+  { name: "postcode", required: true },
+  { name: "country", required: true },
+  { name: "notes" },
 ];
 
-export type PaymentMethodType = 'upi' | 'card' | 'cod';
+export type PaymentMethodType = "upi" | "card" | "cod";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+const rawApiUrl =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:5000";
+const API_URL = rawApiUrl.replace(/\/+$/, "");
 
 const CheckoutForm: React.FC = () => {
   const { t } = useTranslation();
@@ -28,15 +43,54 @@ const CheckoutForm: React.FC = () => {
   const [values, setValues] = useState<Partial<CheckoutFormValues>>({});
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>("upi");
 
   const handleChange = (field: FieldKey, value: string) => {
     setValues((v) => ({ ...v, [field]: value }));
     setErrors((e) => ({ ...e, [field]: undefined }));
   };
 
+  // Helper function to save order details to Express / MongoDB
+  const saveOrderToBackend = async (orderData: any) => {
+    try {
+      const response = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+      return response.ok;
+    } catch (err) {
+      console.warn("Backend API unavailable. Order will be confirmed via WhatsApp.", err);
+      return false;
+    }
+  };
+
+  // Helper function to handle post-order actions (WhatsApp + Redirect)
+  const finishCheckout = (
+    orderId: string,
+    formValues: any,
+    total: number,
+    cartItems: any[],
+  ) => {
+    const itemList = cartItems
+      .map((i) => `${i.quantity}x ${i.name}`)
+      .join("%0A");
+    const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${formValues.fullName}%0A*Phone:* ${formValues.phone}%0A*Address:* ${formValues.addressLine1}, ${formValues.city}, ${formValues.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
+    const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+
+    sessionStorage.setItem("lastOrderWhatsappLink", whatsappLink);
+    sessionStorage.setItem("lastOrderId", orderId);
+
+    clearCart();
+    navigate("/order-success");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 1. Validate form fields using Zod schema
     const result = checkoutSchema.safeParse(values);
     if (!result.success) {
       const fieldErrors: Partial<Record<FieldKey, string>> = {};
@@ -53,14 +107,14 @@ const CheckoutForm: React.FC = () => {
     const orderId = `ORD-${Math.floor(Math.random() * 1000000)}`;
     const total = getTotalPrice();
 
-    // 1. Send order payload to MongoDB via Express Backend
     const orderPayload = {
       orderId,
       customerName: values.fullName,
       email: values.email,
       customerPhone: values.phone,
-      address: `${values.addressLine1}${values.addressLine2 ? ', ' + values.addressLine2 : ''}, ${values.city}, ${values.postcode}, ${values.country}`,
+      address: `${values.addressLine1}${values.addressLine2 ? ", " + values.addressLine2 : ""}, ${values.city}, ${values.postcode}, ${values.country}`,
       paymentMethod,
+      paymentStatus: paymentMethod === "cod" ? "Pending" : "Paid",
       items: items.map((i) => ({
         id: i.id,
         name: i.name,
@@ -68,51 +122,105 @@ const CheckoutForm: React.FC = () => {
         quantity: i.quantity,
       })),
       totalAmount: total,
-      notes: values.notes || '',
+      notes: values.notes || "",
       createdAt: new Date(),
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderPayload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save order to MongoDB');
+      // MODE A: CASH ON DELIVERY (COD)
+      if (paymentMethod === "cod") {
+        await saveOrderToBackend(orderPayload);
+        finishCheckout(orderId, values, total, items);
+        return;
       }
 
-      console.log('✅ Order saved successfully to database!');
+      // MODE B: ONLINE PAYMENTS (UPI / Card via Razorpay)
+      // 1. Create payment order on backend
+      let res;
+      try {
+        res = await fetch(`${API_URL}/api/payment/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: total }),
+        });
+      } catch (netErr) {
+        throw new Error(
+          "Could not connect to payment backend. Please try Cash on Delivery (COD) or check your server status.",
+        );
+      }
 
-      // 2. Construct order details for WhatsApp
-      const itemList = items.map((i) => `${i.quantity}x ${i.name}`).join('%0A');
-      const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${values.fullName}%0A*Phone:* ${values.phone}%0A*Address:* ${values.addressLine1}, ${values.city}, ${values.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
-      const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+      if (!res.ok) {
+        throw new Error("Failed to create Razorpay payment order. Try selecting Cash on Delivery.");
+      }
 
-      // 3. Save details to session storage
-      sessionStorage.setItem('lastOrderWhatsappLink', whatsappLink);
-      sessionStorage.setItem('lastOrderId', orderId);
+      const razorpayOrder = await res.json();
 
-      // 4. Clear cart and redirect
-      clearCart();
-      navigate('/order-success');
-    } catch (error) {
-      console.error('❌ Error saving order:', error);
-      alert('Could not save order. Please check if your backend server is running on port 5000.');
+      // 2. Open Razorpay Checkout Window
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_dummyKey",
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "SweetDelights",
+        description: `Order #${orderId}`,
+        order_id: razorpayOrder.id,
+        handler: async (response: any) => {
+          // 3. Verify Payment Signature with backend
+          try {
+            const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              await saveOrderToBackend(orderPayload);
+              finishCheckout(orderId, values, total, items);
+            } else {
+              alert("Payment verification failed. Please try again.");
+            }
+          } catch (vErr) {
+            console.error("Payment verification error:", vErr);
+            finishCheckout(orderId, values, total, items);
+          }
+        },
+        prefill: {
+          name: values.fullName,
+          email: values.email,
+          contact: values.phone,
+        },
+        theme: {
+          color: "#78350f", // Amber theme
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error: any) {
+      console.error("❌ Checkout Error:", error);
+      alert(
+        error?.message ||
+          "Error processing checkout. Please check your connection or choose Cash on Delivery.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto">
+    <form
+      id="checkout-form"
+      onSubmit={handleSubmit}
+      className="space-y-6 max-w-lg mx-auto"
+    >
       <div className="space-y-4">
-        {FIELD_KEYS.map(({ name, type = 'text', required }) => (
+        {FIELD_KEYS.map(({ name, type = "text", required }) => (
           <div key={name}>
-            <label htmlFor={`field-${name}`} className="block text-sm font-medium text-amber-900 mb-1">
+            <label
+              htmlFor={`field-${name}`}
+              className="block text-sm font-medium text-amber-900 mb-1"
+            >
               {t(`checkout.fields.${name}`)}
               {required && <span className="text-red-500 ml-0.5">*</span>}
             </label>
@@ -120,10 +228,12 @@ const CheckoutForm: React.FC = () => {
               id={`field-${name}`}
               name={name}
               type={type}
-              value={(values[name] as string) ?? ''}
+              value={(values[name] as string) ?? ""}
               onChange={(e) => handleChange(name, e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 ${
-                errors[name] ? 'border-red-400 bg-red-50' : 'border-amber-200 bg-white'
+                errors[name]
+                  ? "border-red-400 bg-red-50"
+                  : "border-amber-200 bg-white"
               }`}
             />
             {errors[name] && (
@@ -135,10 +245,19 @@ const CheckoutForm: React.FC = () => {
 
       {/* Payment Methods Section */}
       <div className="border-t border-amber-200 pt-6">
-        <h3 className="text-lg font-bold text-amber-900 mb-3">{t('checkout.paymentMethod')}</h3>
+        <h3 className="text-lg font-bold text-amber-900 mb-3">
+          {t("checkout.paymentMethod")}
+        </h3>
         <div className="space-y-3">
-          {(['upi', 'card', 'cod'] as const).map((method) => (
-            <label key={method} className={`flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${paymentMethod === method ? 'border-amber-500 bg-amber-50' : 'border-amber-200 bg-white hover:bg-amber-50/50'}`}>
+          {(["upi", "card", "cod"] as const).map((method) => (
+            <label
+              key={method}
+              className={`flex items-center p-3 border rounded-xl cursor-pointer transition-colors ${
+                paymentMethod === method
+                  ? "border-amber-500 bg-amber-50"
+                  : "border-amber-200 bg-white hover:bg-amber-50/50"
+              }`}
+            >
               <input
                 type="radio"
                 name="paymentMethod"
@@ -159,9 +278,9 @@ const CheckoutForm: React.FC = () => {
         id="submit-checkout-btn"
         type="submit"
         disabled={submitting}
-        className="w-full bg-amber-800 hover:bg-amber-900 disabled:opacity-60 text-white font-semibold py-3 rounded-lg transition-colors mt-2 text-lg shadow-sm"
+        className="w-full bg-amber-800 hover:bg-amber-900 disabled:opacity-60 text-white font-semibold py-3 rounded-lg transition-colors mt-2 text-lg shadow-sm cursor-pointer"
       >
-        {submitting ? t('checkout.placingOrder') : t('checkout.placeOrder')}
+        {submitting ? t("checkout.placingOrder") : t("checkout.placeOrder")}
       </button>
     </form>
   );

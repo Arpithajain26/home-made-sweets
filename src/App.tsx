@@ -6,6 +6,7 @@ import Footer from './components/layout/Footer';
 import { AuthProvider } from './context/AuthContext';
 import AuthModal from './features/auth/components/AuthModal';
 
+
 const App: React.FC = () => {
   return (
     <AuthProvider>

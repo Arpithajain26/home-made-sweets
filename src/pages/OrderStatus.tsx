@@ -11,11 +11,9 @@ interface OrderStatusProps {
 
 const OrderStatus: React.FC<OrderStatusProps> = ({
   orderId = "ORD-40983",
-  userPhone = "",
-  items = [],
   totalAmount = 0,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isKannada = i18n.language.startsWith("kn");
 
   // 1. Calculate Delivery Date (3 to 5 days from today)

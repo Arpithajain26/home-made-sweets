@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-amber-50: #fdf7f4;
-  --color-amber-100: #f5e8e0;
-  --color-amber-200: #e6c8b5;
-  --color-amber-300: #d2a082;
-  --color-amber-400: #b97852;
-  --color-amber-500: #9c5b36;
-  --color-amber-600: #7f4225;
-  --color-amber-700: #633019;
-  --color-amber-800: #4a2010;
-  --color-amber-900: #331409;
-  --color-amber-950: #1f0a04;
+  --color-amber-50: #fffdf8;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+  --color-amber-800: #92400e;
+  --color-amber-900: #78350f;
+  --color-amber-950: #451a03;
 }
 
 @layer utilities {
@@ -32,29 +32,29 @@
   }
 }
 
-/* Custom 3D & Rich Brown styling enhancements */
+/* Warm Saffron Sweets Styling */
 body {
-  background-color: #fdf7f4;
-  color: #1f0a04;
+  background-color: #fffdf8;
+  color: #451a03;
   font-family: inherit;
   overflow-x: hidden;
 }
 
 /* Smooth selection highlight */
 ::selection {
-  background-color: #4a2010;
-  color: #fdf7f4;
+  background-color: #d97706;
+  color: #ffffff;
 }
 
-/* Glassmorphic brown cards */
-.glass-brown {
-  background: rgba(74, 32, 16, 0.04);
+/* Glassmorphic sweets cards */
+.glass-sweets {
+  background: rgba(254, 243, 199, 0.5);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(127, 66, 37, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.glass-brown-dark {
-  background: rgba(31, 10, 4, 0.85);
+.glass-sweets-dark {
+  background: rgba(120, 53, 15, 0.95);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(185, 120, 82, 0.25);
+  border: 1px solid rgba(251, 191, 36, 0.3);
 }

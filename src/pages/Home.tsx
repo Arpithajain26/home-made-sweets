@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Star, Truck, Shield, Clock, ChevronRight, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useCartStore } from '../features/cart/store/useCartStore';
+import Tilt from 'react-parallax-tilt';
 
-import { SWEETS_CATALOG } from '../data/catalog';
-
-/* ── Static data ───────────────────────────────────────────── */
-// Take top 3 best-rated/featured items
-const FEATURED = [
-  SWEETS_CATALOG.find(s => s.id === 'sw-1')!,
-  SWEETS_CATALOG.find(s => s.id === 'sw-6')!,
-  SWEETS_CATALOG.find(s => s.id === 'sv-2')!,
-];
-
+/* ── Product Interface matching Backend Schema ── */
+interface Product {
+  _id: string;
+  id: string;
+  nameEn: string;
+  nameKn: string;
+  price: number;
+  category: string;
+  imageUrl?: string;
+  emoji?: string;
+  badge?: string;
+  desc?: string;
+  descKn?: string;
+  allergen?: string;
+}
 
 const TESTIMONIALS = [
   { name: 'Priya S.', text: 'The Kaju Katli is absolutely divine — tastes exactly like home!', stars: 5 },
@@ -28,6 +34,25 @@ const Home: React.FC = () => {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const addItem = useCartStore((s) => s.addItem);
 
+  // 👈 Dynamic state for products loaded from MongoDB
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Fetch live products from backend
+    fetch('http://localhost:5000/api/products')
+      .then((res) => res.json())
+      .then((data: Product[]) => {
+        // Pick top 3 items to show on the Home page
+        setFeaturedProducts(data.slice(0, 3));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch sweets from backend:', err);
+        setLoading(false);
+      });
+  }, []);
+
   const PERKS = [
     { icon: <Truck size={28} />, title: t('home.perks.freeDelivery'), body: t('home.perks.freeDeliveryBody') },
     { icon: <Shield size={28} />, title: t('home.perks.organic'), body: t('home.perks.organicBody') },
@@ -40,7 +65,6 @@ const Home: React.FC = () => {
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-amber-700 text-white">
-        {/* Decorative circles */}
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-amber-600/30 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
 
@@ -102,17 +126,17 @@ const Home: React.FC = () => {
           </div>
 
           {/* Hero visual — emoji grid */}
-          <div className="flex-shrink-0 grid grid-cols-3 gap-4">
+          <Tilt className="flex-shrink-0 grid grid-cols-3 gap-4 preserve-3d perspective-1000" tiltMaxAngleX={15} tiltMaxAngleY={15} scale={1.05} transitionSpeed={1500}>
             {['🍫','🍪','🪙','🍮','🧁','🍭'].map((em, i) => (
               <div
                 key={i}
                 style={{ animationDelay: `${i * 0.15}s` }}
-                className="w-20 h-20 rounded-2xl bg-amber-800/60 backdrop-blur flex items-center justify-center text-4xl shadow-xl hover:scale-110 transition-transform cursor-default select-none"
+                className="w-20 h-20 rounded-2xl bg-amber-800/60 backdrop-blur flex items-center justify-center text-4xl shadow-xl transition-all translate-z-30 cursor-default select-none"
               >
                 {em}
               </div>
             ))}
-          </div>
+          </Tilt>
         </div>
       </section>
 
@@ -131,7 +155,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ── FEATURED PRODUCTS ────────────────────────────────── */}
+      {/* ── FEATURED PRODUCTS FROM BACKEND ─────────────────── */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="flex items-end justify-between mb-8">
           <div>
@@ -143,54 +167,68 @@ const Home: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {FEATURED.map((sweet) => {
-            const isKn = i18n.language.startsWith('kn');
-            const displayDesc = isKn ? sweet.descKn : sweet.desc;
-            const displayAllergen = isKn ? `ಶೇಂಗಾ, ಡೈರಿ ಇತ್ಯಾದಿ ಹೊಂದಿದೆ` : `Contains: ${sweet.allergen}`; // simplifying allergen for demo
+        {loading ? (
+          <div className="text-center py-10 font-bold text-amber-900">Loading delicious sweets...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {featuredProducts.map((sweet) => {
+              const isKn = i18n.language.startsWith('kn');
+              const displayDesc = isKn ? (sweet.descKn || 'ತಾಜಾ ಹಾಗೂ ರುಚಿಕರವಾದ ತಿಂಡಿ.') : (sweet.desc || 'Fresh and delicious traditional treat.');
+              const displayAllergen = isKn ? `ಶೇಂಗಾ, ಡೈರಿ ಇತ್ಯಾದಿ ಹೊಂದಿದೆ` : `Contains: Nuts / Dairy`;
 
-            return (
-              <div
-                key={sweet.id}
-                id={`featured-card-${sweet.id}`}
-                className="group bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-              >
-                {/* Card header */}
-                <div className={`h-40 relative ${!sweet.imageUrl ? 'bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center text-7xl' : ''}`}>
-                  {sweet.imageUrl ? (
-                    <img src={sweet.imageUrl} alt={sweet.nameEn} className="w-full h-full object-cover" />
-                  ) : (
-                    sweet.emoji
-                  )}
-                  {sweet.badge && (
-                    <span className="absolute top-3 left-3 bg-amber-800 text-amber-100 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm z-10">
-                      {sweet.badge}
-                    </span>
-                  )}
-                </div>
+              return (
+                <Tilt
+                  key={sweet._id || sweet.id}
+                  className="preserve-3d"
+                  perspective={1000}
+                  scale={1.02}
+                  transitionSpeed={1500}
+                  tiltMaxAngleX={8}
+                  tiltMaxAngleY={8}
+                >
+                  <div
+                    id={`featured-card-${sweet.id}`}
+                    className="group bg-white rounded-2xl shadow-md border border-amber-100 overflow-hidden h-full preserve-3d"
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    {/* Card header */}
+                    <div className={`h-40 relative translate-z-20 shadow-lg ${!sweet.imageUrl ? 'bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center text-7xl' : ''}`}>
+                      {sweet.imageUrl ? (
+                        <img src={sweet.imageUrl} alt={sweet.nameEn} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      ) : (
+                        sweet.emoji || '🍬'
+                      )}
+                      {sweet.badge && (
+                        <span className="absolute top-3 left-3 bg-amber-800 text-amber-100 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm z-10">
+                          {sweet.badge}
+                        </span>
+                      )}
+                    </div>
 
-                <div className="p-5">
-                  <h3 className="font-bold text-amber-950 mb-1">{isKn ? sweet.nameKn : sweet.labelEn}</h3>
-                  <p className="text-xs text-amber-600 font-medium mb-2">{isKn ? sweet.nameEn : sweet.nameKn}</p>
-                  <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider mb-2">
-                    ⚠ {displayAllergen}
-                  </p>
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">{displayDesc}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-extrabold text-amber-700">₹{sweet.price}</span>
-                    <button
-                      id={`home-add-to-cart-${sweet.id}`}
-                      onClick={() => addItem({ id: sweet.id, name: isKn ? sweet.nameKn : sweet.labelEn, price: sweet.price })}
-                      className="flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors group-hover:scale-105"
-                    >
-                      <ShoppingBag size={14} /> {t('home.addToBag')}
-                    </button>
+                    <div className="p-5 translate-z-30">
+                      <h3 className="font-bold text-amber-950 mb-1 drop-shadow-sm">{isKn ? sweet.nameKn : sweet.nameEn}</h3>
+                      <p className="text-xs text-amber-600 font-medium mb-2">{isKn ? sweet.nameEn : sweet.nameKn}</p>
+                      <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider mb-2">
+                        ⚠ {displayAllergen}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">{displayDesc}</p>
+                      <div className="flex items-center justify-between translate-z-20">
+                        <span className="text-xl font-extrabold text-amber-700">₹{sweet.price}</span>
+                        <button
+                          id={`home-add-to-cart-${sweet.id}`}
+                          onClick={() => addItem({ id: sweet.id, name: isKn ? sweet.nameKn : sweet.nameEn, price: sweet.price })}
+                          className="flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:translate-y-0.5 shadow-md active:shadow-sm"
+                        >
+                          <ShoppingBag size={14} /> {t('home.addToBag')}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                </Tilt>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* ── AUTH CTA BANNER ──────────────────────────────────── */}

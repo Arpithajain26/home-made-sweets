@@ -49,25 +49,62 @@ const CheckoutForm: React.FC = () => {
     }
 
     setSubmitting(true);
-    
-    // Construct order details for WhatsApp
+
     const orderId = `ORD-${Math.floor(Math.random() * 1000000)}`;
     const total = getTotalPrice();
-    const itemList = items.map(i => `${i.quantity}x ${i.name}`).join('%0A');
-    
-    const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${values.fullName}%0A*Phone:* ${values.phone}%0A*Address:* ${values.addressLine1}, ${values.city}, ${values.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
 
-    const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+    // 1. Send order payload to MongoDB via Express Backend
+    const orderPayload = {
+      orderId,
+      customerName: values.fullName,
+      email: values.email,
+      customerPhone: values.phone,
+      address: `${values.addressLine1}${values.addressLine2 ? ', ' + values.addressLine2 : ''}, ${values.city}, ${values.postcode}, ${values.country}`,
+      paymentMethod,
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      })),
+      totalAmount: total,
+      notes: values.notes || '',
+      createdAt: new Date(),
+    };
 
-    // Simulate API call
-    await new Promise((res) => setTimeout(res, 800));
-    
-    // Save link to session storage so success page can read it before clearing cart
-    sessionStorage.setItem('lastOrderWhatsappLink', whatsappLink);
-    sessionStorage.setItem('lastOrderId', orderId);
-    
-    clearCart();
-    navigate('/order-success');
+    try {
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save order to MongoDB');
+      }
+
+      console.log('✅ Order saved successfully to database!');
+
+      // 2. Construct order details for WhatsApp
+      const itemList = items.map((i) => `${i.quantity}x ${i.name}`).join('%0A');
+      const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${values.fullName}%0A*Phone:* ${values.phone}%0A*Address:* ${values.addressLine1}, ${values.city}, ${values.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
+      const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+
+      // 3. Save details to session storage
+      sessionStorage.setItem('lastOrderWhatsappLink', whatsappLink);
+      sessionStorage.setItem('lastOrderId', orderId);
+
+      // 4. Clear cart and redirect
+      clearCart();
+      navigate('/order-success');
+    } catch (error) {
+      console.error('❌ Error saving order:', error);
+      alert('Could not save order. Please check if your backend server is running on port 5000.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  _id?: string; // Add optional MongoDB ObjectId
   emoji: string;
   category: 'sweet' | 'savory';
   nameKn: string;
@@ -11,10 +12,11 @@ export interface Product {
   desc: string;
   descKn: string;
   badge?: string;
-  rating: number;
-  reviewsCount: number;
+  rating?: number;       // 👈 Made optional
+  reviewsCount?: number; // 👈 Made optional
   imageUrl?: string;
 }
+
 
 export const SWEETS_CATALOG: Product[] = [
   // ── Sweets ───────────────────────────────────────────────────────────────

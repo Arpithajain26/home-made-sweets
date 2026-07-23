@@ -10,7 +10,7 @@ interface DistributorModalProps {
 const DistributorModal: React.FC<DistributorModalProps> = ({
   isOpen,
   onClose,
-  title = 'Start Your Business With ISH / Distributors Enquiry',
+  title = 'Start Your Business With DSH / Distributors Enquiry',
 }) => {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({

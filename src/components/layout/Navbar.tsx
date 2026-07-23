@@ -92,22 +92,22 @@ const Navbar: React.FC = () => {
                     to="/shop?category=sweet"
                     className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-[#F6EDE2] text-[#351608] text-xs font-semibold"
                   >
-                    <span>🍬</span> Traditional Sweets (Paalkova, Mysurpa)
+                    <span>🟡</span> Traditional Ladoos (Shenga, Rave Undi)
                   </Link>
                   <Link
                     to="/shop?category=savory"
                     className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-[#F6EDE2] text-[#351608] text-xs font-semibold"
                   >
-                    <span>🌀</span> Kai Murukku & Savories
+                    <span>🌀</span> Chakkuli & Savories
                   </Link>
                   <Link
-                    to="/shop?category=chips"
+                    to="/shop?category=sweet"
                     className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-[#F6EDE2] text-[#351608] text-xs font-semibold"
                   >
-                    <span>🍌</span> Nagercoil Banana Chips
+                    <span>🟠</span> Shenga Holige (Obbattu)
                   </Link>
                   <Link
-                    to="/shop?category=gifting"
+                    to="/shop"
                     className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-[#F6EDE2] text-[#351608] text-xs font-semibold"
                   >
                     <span>🎁</span> Luxury Festive Gift Boxes
@@ -167,6 +167,11 @@ const Navbar: React.FC = () => {
               <Truck size={14} /> Track Order
             </button>
 
+            {/* Our Story */}
+            <Link to="/about" className="hover:text-[#8D4E20] transition-colors py-2">
+              Our Story
+            </Link>
+
             {/* Contact Us */}
             <a href="#contact-footer" className="hover:text-[#8D4E20] transition-colors py-2">
               Contact Us
@@ -180,9 +185,9 @@ const Navbar: React.FC = () => {
               Distributors Enquiry
             </button>
 
-            {/* Start Your Business With ISH */}
+            {/* Start Your Business With DSH */}
             <button
-              onClick={() => openDistributor('Start Your Business With ISH')}
+              onClick={() => openDistributor('Start Your Business With DSH')}
               className="bg-[#8D4E20] hover:bg-[#6B3615] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm hover:scale-105"
             >
               Start Business
@@ -267,7 +272,7 @@ const Navbar: React.FC = () => {
               <input
                 type="text"
                 autoFocus
-                placeholder="Search Paalkova, Banana Chips, Murukku, Holige..."
+                placeholder="Search Shenga Undi, Rave Undi, Chakkuli, Holige..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-white border border-[#D8B48F] rounded-xl px-4 py-2 text-sm text-[#351608] focus:outline-none focus:ring-2 focus:ring-[#8D4E20]"
@@ -321,11 +326,11 @@ const Navbar: React.FC = () => {
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
-                openDistributor('Start Your Business With ISH');
+                openDistributor('Start Your Business With DSH');
               }}
               className="block w-full text-left py-2 font-bold text-[#8D4E20]"
             >
-              Start Your Business With ISH
+              Start Your Business With DSH
             </button>
           </div>
         )}

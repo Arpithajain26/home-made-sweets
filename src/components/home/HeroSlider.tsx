@@ -9,7 +9,7 @@ const HeroSlider: React.FC = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
+      setCurrentSlide((prev) => (prev + 1) % 2);
     }, 6000);
     return () => clearInterval(timer);
   }, []);
@@ -23,7 +23,7 @@ const HeroSlider: React.FC = () => {
   return (
     <div className="relative overflow-hidden min-h-[540px] flex items-center shadow-lg">
       
-      {/* ── SLIDE 1: BOLD & REAL FLAVOURS ONLY! (Screenshot 1 Theme) ── */}
+      {/* ── SLIDE 1: BOLD & REAL FLAVOURS ONLY! (Our Product Collection) ── */}
       {currentSlide === 0 && (
         <div className="w-full bg-[#1c110a] text-[#FDFBF7] py-14 px-6 sm:px-12 transition-all duration-700 animate-fade-in relative">
           
@@ -44,12 +44,11 @@ const HeroSlider: React.FC = () => {
                 <span className="text-[#FDFBF7]">FLAVOURS ONLY!</span>
               </h1>
 
-              {/* Script Subtitle matching image 1 */}
               <p className="font-script text-3xl sm:text-4xl text-[#E8D2AC] tracking-wide -mt-2">
-                Crunch cleaner
+                Crunch cleaner & authentic
               </p>
 
-              {/* Promo Coupon Pill matching image 1 */}
+              {/* Promo Coupon Pill */}
               <div className="inline-flex items-center gap-3 coupon-badge px-5 py-3 rounded-2xl shadow-md border-2 border-[#8D4E20]">
                 <span className="font-heritage text-lg font-black text-[#351608]">
                   10% OFF | CRUNCH10
@@ -69,33 +68,33 @@ const HeroSlider: React.FC = () => {
                   to="/shop"
                   className="bg-[#AB682F] hover:bg-[#8D4E20] text-white px-8 py-3.5 rounded-2xl font-bold text-sm shadow-xl transition-all hover:scale-105 flex items-center gap-2"
                 >
-                  <ShoppingBag size={18} /> Shop Savory Snacks
+                  <ShoppingBag size={18} /> Shop Products Collection
                 </Link>
               </div>
             </div>
 
-            {/* Right Image & Packaging Showcase */}
+            {/* Right Image & Packaging Showcase (Actual Product Spread) */}
             <div className="lg:col-span-6 flex justify-center">
               <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8} scale={1.02} transitionSpeed={1500} className="w-full">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-[#8D4E20]/40 group">
                   <img
-                    src="/images/traditional_snacks_hero.jpg"
-                    alt="Banana Chips Kai Murukku Spicy Thattai"
+                    src="/images/our_products_collection.jpg"
+                    alt="Authentic Homemade Sweets & Snacks Collection"
                     className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  {/* Floating product badges matching screenshot 1 */}
+                  {/* Floating product badges highlighting our actual products */}
                   <div className="absolute bottom-4 left-4 right-4 bg-[#1c110a]/90 backdrop-blur-md border border-[#D8B48F]/30 p-3 rounded-2xl flex justify-around text-center text-xs text-[#E8D2AC]">
                     <div>
-                      <p className="font-extrabold text-white text-xs">NAGERCOIL</p>
-                      <p className="text-[10px] text-[#D8B48F]">Banana Chips</p>
+                      <p className="font-extrabold text-white text-xs">SHENGA UNDI</p>
+                      <p className="text-[10px] text-[#D8B48F]">Peanut Ladoo</p>
                     </div>
                     <div className="border-x border-[#D8B48F]/20 px-3">
-                      <p className="font-extrabold text-white text-xs">KARAIKUDI</p>
-                      <p className="text-[10px] text-[#D8B48F]">Kai Murukku</p>
+                      <p className="font-extrabold text-white text-xs">CHAKKULI</p>
+                      <p className="text-[10px] text-[#D8B48F]">Spiral Crunch</p>
                     </div>
                     <div>
-                      <p className="font-extrabold text-white text-xs">SALEM</p>
-                      <p className="text-[10px] text-[#D8B48F]">Spicy Thattai</p>
+                      <p className="font-extrabold text-white text-xs">SHENGA HOLIGE</p>
+                      <p className="text-[10px] text-[#D8B48F]">Peanut Obbattu</p>
                     </div>
                   </div>
                 </div>
@@ -106,106 +105,64 @@ const HeroSlider: React.FC = () => {
         </div>
       )}
 
-      {/* ── SLIDE 2: PAALKOVA (Screenshot 2 Theme) ── */}
+      {/* ── SLIDE 2: TRADITIONAL SWEETS ASSORTMENT (Shenga Undi, Rave Undi, Kobbari Undi) ── */}
       {currentSlide === 1 && (
-        <div className="w-full bg-[#F7F1E5] text-[#351608] py-14 px-6 sm:px-12 transition-all duration-700 animate-fade-in relative">
-          
-          {/* Temple Gopuram background watermark illustration */}
-          <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(#351608_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            
-            {/* Left Image: Paalkova Sweet Box & Clay Bowl */}
-            <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
-              <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8} scale={1.02} transitionSpeed={1500} className="w-full">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-[#EAD7C0] group">
-                  <img
-                    src="/images/paalkova_hero.jpg"
-                    alt="Fresh Srivilliputhur Paalkova"
-                    className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <span className="absolute top-4 left-4 bg-[#8D4E20] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md">
-                    Srivilliputhur Special 🍬
-                  </span>
-                </div>
-              </Tilt>
-            </div>
-
-            {/* Right Content matching Screenshot 2 */}
-            <div className="lg:col-span-6 space-y-6 text-center lg:text-left order-1 lg:order-2">
-              
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black font-heritage tracking-tight text-[#351608] leading-none">
-                Paalkova
-              </h1>
-
-              {/* Pill feature boxes stacked vertically like Screenshot 2 */}
-              <div className="space-y-3.5 max-w-md mx-auto lg:mx-0 pt-2">
-                <div className="heritage-pill p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
-                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
-                    🥛
-                  </div>
-                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase">
-                    MADE WITH FRESH WESTERN GHATS MILK
-                  </span>
-                </div>
-
-                <div className="heritage-pill p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
-                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
-                    ✨
-                  </div>
-                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase">
-                    MELT-IN-THE-MOUTH
-                  </span>
-                </div>
-
-                <div className="heritage-pill p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
-                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
-                    🌿
-                  </div>
-                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase">
-                    NO PRESERVATIVES
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-wrap gap-4 justify-center lg:justify-start">
-                <Link
-                  to="/shop"
-                  className="bg-[#6B3615] hover:bg-[#4D230D] text-white px-8 py-3.5 rounded-2xl font-bold text-sm shadow-xl transition-all hover:scale-105 flex items-center gap-2"
-                >
-                  <ShoppingBag size={18} /> Order Fresh Paalkova
-                </Link>
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ── SLIDE 3: GHEE MYSURPA & HERITAGE SWEETS ── */}
-      {currentSlide === 2 && (
         <div className="w-full bg-[#4D230D] text-[#FDFBF7] py-14 px-6 sm:px-12 transition-all duration-700 animate-fade-in relative">
           
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             
-            {/* Left Text */}
-            <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              <span className="inline-flex items-center gap-1.5 bg-[#AB682F]/40 border border-[#D8B48F]/40 text-[#E8D2AC] text-xs font-extrabold uppercase tracking-widest px-4 py-1.5 rounded-full">
-                👑 Royal Festive Heritage
-              </span>
+            {/* Left Image: Sweets Assortment */}
+            <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
+              <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8} scale={1.02} transitionSpeed={1500} className="w-full">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-[#D8B48F]/40 group">
+                  <img
+                    src="/images/desi_sweets_assortment.jpg"
+                    alt="Authentic Handmade Sweets Assortment"
+                    className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <span className="absolute top-4 left-4 bg-[#8D4E20] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md">
+                    100% Pure Ghee & Jaggery 🪔
+                  </span>
+                </div>
+              </Tilt>
+            </div>
 
+            {/* Right Content */}
+            <div className="lg:col-span-6 space-y-6 text-center lg:text-left order-1 lg:order-2">
+              
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-heritage text-[#E8D2AC] leading-tight uppercase">
-                Royal Cow Ghee<br />
-                <span className="text-white">Mysurpa & Sweets</span>
+                Handcrafted Sweets<br />
+                <span className="text-white">& Ladoo Collection</span>
               </h1>
 
-              <p className="text-[#D8B48F] text-base sm:text-lg max-w-md mx-auto lg:mx-0 leading-relaxed">
-                Handcrafted daily in pure cow ghee, cardamom, and saffron. Sealed fresh for maximum rich aroma.
-              </p>
+              {/* Feature pills */}
+              <div className="space-y-3.5 max-w-md mx-auto lg:mx-0 pt-2">
+                <div className="bg-[#351608]/70 border border-[#D8B48F]/30 p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
+                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
+                    🟡
+                  </div>
+                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase text-[#E8D2AC]">
+                    SHENGA, RAVE & KOBBARI UNDI
+                  </span>
+                </div>
 
-              <div className="inline-flex items-center gap-2 bg-[#6B3615] px-4 py-2 rounded-xl text-xs font-bold text-[#E8D2AC] border border-[#D8B48F]/30">
-                🎁 Free Heritage Tin Box on Orders &gt; ₹999
+                <div className="bg-[#351608]/70 border border-[#D8B48F]/30 p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
+                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
+                    ✨
+                  </div>
+                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase text-[#E8D2AC]">
+                    PURE COW GHEE & ORGANIC JAGGERY
+                  </span>
+                </div>
+
+                <div className="bg-[#351608]/70 border border-[#D8B48F]/30 p-3.5 rounded-2xl flex items-center gap-3 transition-transform hover:translate-x-1">
+                  <div className="w-9 h-9 rounded-xl bg-[#D8B48F] text-[#351608] flex items-center justify-center font-bold text-lg shrink-0">
+                    🌿
+                  </div>
+                  <span className="font-extrabold text-xs sm:text-sm tracking-wider uppercase text-[#E8D2AC]">
+                    NO ARTIFICIAL PRESERVATIVES
+                  </span>
+                </div>
               </div>
 
               <div className="pt-2 flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -216,19 +173,7 @@ const HeroSlider: React.FC = () => {
                   <ShoppingBag size={18} /> Explore Sweets Collection
                 </Link>
               </div>
-            </div>
 
-            {/* Right Image */}
-            <div className="lg:col-span-6 flex justify-center">
-              <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8} scale={1.02} transitionSpeed={1500} className="w-full">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-[#D8B48F]/40 group">
-                  <img
-                    src="/images/ghee_mysurpa_hero.jpg"
-                    alt="Royal Ghee Mysurpa"
-                    className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-              </Tilt>
             </div>
 
           </div>
@@ -237,14 +182,14 @@ const HeroSlider: React.FC = () => {
 
       {/* CAROUSEL NAV ARROWS */}
       <button
-        onClick={() => setCurrentSlide((prev) => (prev - 1 + 3) % 3)}
+        onClick={() => setCurrentSlide((prev) => (prev - 1 + 2) % 2)}
         className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm"
         aria-label="Previous slide"
       >
         <ChevronLeft size={22} />
       </button>
       <button
-        onClick={() => setCurrentSlide((prev) => (prev + 1) % 3)}
+        onClick={() => setCurrentSlide((prev) => (prev + 1) % 2)}
         className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all z-20 backdrop-blur-sm"
         aria-label="Next slide"
       >
@@ -253,7 +198,7 @@ const HeroSlider: React.FC = () => {
 
       {/* CAROUSEL DOT INDICATORS */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-        {[0, 1, 2].map((idx) => (
+        {[0, 1].map((idx) => (
           <button
             key={idx}
             onClick={() => setCurrentSlide(idx)}
@@ -270,3 +215,4 @@ const HeroSlider: React.FC = () => {
 };
 
 export default HeroSlider;
+

@@ -78,7 +78,7 @@ const CheckoutForm: React.FC = () => {
       .map((i) => `${i.quantity}x ${i.name}`)
       .join("%0A");
     const whatsappText = `*ORDER CONFIRMATION*%0A%0AHello, here are the details of my order:%0A%0A*Order ID:* ${orderId}%0A*Name:* ${formValues.fullName}%0A*Phone:* ${formValues.phone}%0A*Address:* ${formValues.addressLine1}, ${formValues.city}, ${formValues.postcode}%0A%0A*Items Ordered:*%0A${itemList}%0A%0A*Total Amount:* ₹${total}%0A*Payment Method:* ${t(`checkout.paymentMethods.${paymentMethod}`)}`;
-    const whatsappLink = `https://wa.me/+918792008746?text=${whatsappText}`;
+    const whatsappLink = `https://wa.me/917483562925?text=${whatsappText}`;
 
     sessionStorage.setItem("lastOrderWhatsappLink", whatsappLink);
     sessionStorage.setItem("lastOrderId", orderId);

@@ -1,142 +1,101 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Send, Heart } from 'lucide-react';
-import { Phone, Mail, MapPin } from 'lucide-react';
 
 const Footer: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setEmail('');
-    }
-  };
-
   return (
-    <footer id="contact-footer" className="bg-[#220C04] text-[#FDFBF7] border-t-4 border-[#8D4E20] pt-14 pb-8">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-[#4D230D]">
+    <footer id="contact-footer" className="bg-[#DFAC35] text-[#351608] pt-14 pb-8 px-8 border-t border-[#C09228]">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 pb-12">
         
-        {/* Column 1: Brand & Bio (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#8D4E20] text-white flex items-center justify-center font-bold text-xl">
-              🪔
-            </div>
-            <div>
-              <span className="text-xl font-black font-heritage tracking-wide uppercase text-[#E8D2AC]">
-                DESI SNACK HOUSE
-              </span>
-              <p className="text-[10px] text-[#D8B48F] uppercase tracking-widest">
-                Traditional Sweets & Snacks
-              </p>
-            </div>
+        {/* Column 1: Get in touch & Social */}
+        <div>
+          <h3 className="text-xl font-bold font-serif mb-6 tracking-wide">Get in touch</h3>
+          <div className="space-y-1 text-[15px] font-medium leading-relaxed">
+            <p>Email id :</p>
+            <p className="opacity-90">
+              <a href="mailto:desisnackhouse@gmail.com" className="hover:underline">desisnackhouse@gmail.com</a>
+            </p>
+          </div>
+          <div className="pt-4 text-[15px] font-medium leading-relaxed">
+            <p>
+              WhatsApp : <a href="https://wa.me/917483562925" target="_blank" rel="noopener noreferrer" className="hover:underline">+91 7483 562 925</a>
+            </p>
           </div>
 
-          <p className="text-xs text-[#D8B48F] leading-relaxed max-w-sm">
-            Handcrafted with 100% pure cow ghee, organic jaggery, and ethically sourced spices. Bringing authentic regional recipes straight from South Indian kitchens to your home.
-          </p>
-
-          <div className="flex items-center gap-3 pt-2">
-            <a href="#" className="w-9 h-9 rounded-full bg-[#4D230D] hover:bg-[#8D4E20] text-[#D8B48F] hover:text-white flex items-center justify-center transition-colors">
-              <span className="font-bold text-[10px]">FB</span>
+          {/* Social Icons matching screenshot */}
+          <div className="pt-6 flex items-center gap-4">
+            <a
+              href="#"
+              aria-label="Facebook"
+              className="w-9 h-9 rounded-full bg-[#351608] text-[#DFAC35] hover:bg-[#4D230D] transition-colors flex items-center justify-center shadow-sm"
+            >
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
             </a>
-            <a href="#" className="w-9 h-9 rounded-full bg-[#4D230D] hover:bg-[#8D4E20] text-[#D8B48F] hover:text-white flex items-center justify-center transition-colors">
-              <span className="font-bold text-[10px]">IG</span>
+            <a
+              href="https://www.instagram.com/desi_snackhouse?utm_source=qr&igsh=MWd2Y29pYjM3YjI4NQ=="
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="w-9 h-9 rounded-full bg-[#351608] text-[#DFAC35] hover:bg-[#4D230D] transition-colors flex items-center justify-center shadow-sm"
+            >
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
             </a>
           </div>
         </div>
 
-        {/* Column 2: Quick Links (3 cols) */}
-        <div className="lg:col-span-3 space-y-3">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-[#E8D2AC] font-heritage">
-            Quick Links
-          </h4>
-          <ul className="space-y-2 text-xs text-[#D8B48F]">
+        {/* Column 2: Quick links */}
+        <div>
+          <h3 className="text-xl font-bold font-serif mb-6 tracking-wide">Quick links</h3>
+          <ul className="space-y-4 text-[15px] font-medium">
             <li>
-              <Link to="/" className="hover:text-white transition-colors">Home Page</Link>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Privacy Policy</Link>
             </li>
             <li>
-              <Link to="/shop" className="hover:text-white transition-colors">Shop All Sweets & Savories</Link>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Return & Exchange Policy</Link>
             </li>
             <li>
-              <Link to="/shop?category=sweet" className="hover:text-white transition-colors">Srivilliputhur Paalkova</Link>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Shipping Policy</Link>
             </li>
             <li>
-              <Link to="/shop?category=chips" className="hover:text-white transition-colors">Nagercoil Banana Chips</Link>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Terms of Service</Link>
             </li>
             <li>
-              <Link to="/shop?category=savory" className="hover:text-white transition-colors">Karaikudi Kai Murukku</Link>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Frequently Asked Questions (FAQ)</Link>
             </li>
           </ul>
         </div>
 
-        {/* Column 3: Contact & Support (2 cols) */}
-        <div className="lg:col-span-2 space-y-3">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-[#E8D2AC] font-heritage">
-            Help & Contact
-          </h4>
-          <ul className="space-y-2.5 text-xs text-[#D8B48F]">
-            <li className="flex items-center gap-2">
-              <Phone size={14} className="text-[#AB682F]" /> +91 98765 43210
+        {/* Column 3: Brand Links */}
+        <div>
+          <h3 className="text-xl font-bold font-serif mb-6 tracking-wide">Desi Snack House</h3>
+          <ul className="space-y-4 text-[15px] font-medium">
+            <li>
+              <Link to="/shop" className="hover:opacity-70 transition-opacity">Search</Link>
             </li>
-            <li className="flex items-center gap-2">
-              <Mail size={14} className="text-[#AB682F]" /> support@desisnackhouse.com
+            <li>
+              <Link to="/about" className="hover:opacity-70 transition-opacity">Our Story</Link>
             </li>
-            <li className="flex items-start gap-2">
-              <MapPin size={14} className="text-[#AB682F] shrink-0 mt-0.5" />
-              <span>Bengaluru & Madurai Kitchens, India</span>
+            <li>
+              <Link to="/about" className="hover:opacity-70 transition-opacity">About Us</Link>
+            </li>
+            <li>
+              <a href="#contact-footer" className="hover:opacity-70 transition-opacity underline underline-offset-[5px] decoration-1 font-semibold">Contact Us</a>
+            </li>
+            <li>
+              <Link to="#" className="hover:opacity-70 transition-opacity">Press & Media</Link>
             </li>
           </ul>
-        </div>
-
-        {/* Column 4: Newsletter Sign-up (3 cols) */}
-        <div className="lg:col-span-3 space-y-3">
-          <h4 className="text-sm font-extrabold uppercase tracking-wider text-[#E8D2AC] font-heritage">
-            Get 15% Off First Order
-          </h4>
-          <p className="text-xs text-[#D8B48F]">
-            Subscribe for festive discount codes & fresh batch drop alerts.
-          </p>
-
-          {subscribed ? (
-            <div className="bg-[#4D230D] border border-[#8D4E20] p-3 rounded-xl text-xs text-emerald-400 font-bold">
-              🎉 Thank you for subscribing! Check your inbox for 15% OFF code.
-            </div>
-          ) : (
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <input
-                type="email"
-                required
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#351608] border border-[#6B3615] rounded-xl px-3.5 py-2 text-xs text-white placeholder-[#D8B48F]/50 focus:outline-none focus:ring-1 focus:ring-[#8D4E20]"
-              />
-              <button
-                type="submit"
-                className="w-full bg-[#8D4E20] hover:bg-[#AB682F] text-white py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md"
-              >
-                <Send size={12} /> Subscribe Now
-              </button>
-            </form>
-          )}
         </div>
 
       </div>
 
-      {/* Footer Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-6 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#D8B48F]">
-        <p className="flex items-center gap-1">
-          © {new Date().getFullYear()} Desi Snack House (ISH). Crafting authentic sweets with <Heart size={12} className="text-red-500 fill-current inline" />
-        </p>
-        <div className="flex items-center gap-3">
-          <span className="bg-[#351608] px-2.5 py-1 rounded text-[10px] font-bold border border-[#4D230D]">UPI / QR</span>
-          <span className="bg-[#351608] px-2.5 py-1 rounded text-[10px] font-bold border border-[#4D230D]">Visa / Mastercard</span>
-          <span className="bg-[#351608] px-2.5 py-1 rounded text-[10px] font-bold border border-[#4D230D]">COD Available</span>
-        </div>
+      {/* Copyright Footer Bar */}
+      <div className="max-w-6xl mx-auto pt-6 border-t border-[#C09228] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold opacity-90">
+        <p>© {new Date().getFullYear()} Desi Snack House (DSH). All Rights Reserved.</p>
+        <p className="text-[11px]">Crafted with ♥ for Authentic Homemade Taste</p>
       </div>
     </footer>
   );

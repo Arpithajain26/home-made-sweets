@@ -30,7 +30,7 @@ const TopBar: React.FC = () => {
           </a>
           <span className="text-white/20">|</span>
           <span className="flex items-center gap-1 text-[11px]">
-            <Phone size={12} /> +91 98765 43210
+            <Phone size={12} /> +91 7483 562 925
           </span>
         </div>
 

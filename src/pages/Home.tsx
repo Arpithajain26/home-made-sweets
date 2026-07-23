@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Star, Truck, Shield, Clock, ChevronRight, Heart } from 'lucide-react';
+import { ShoppingBag, Star, Truck, ShieldCheck, Clock, Lock, ChevronRight, Award } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useCartStore } from '../features/cart/store/useCartStore';
 import Tilt from 'react-parallax-tilt';
+import HeroSlider from '../components/home/HeroSlider';
+import CategoryGrid from '../components/home/CategoryGrid';
+import MoodSelector from '../components/home/MoodSelector';
+import { SWEETS_CATALOG } from '../data/catalog';
 
-/* ── Product Interface matching Backend Schema ── */
 interface Product {
-  _id: string;
+  _id?: string;
   id: string;
   nameEn: string;
   nameKn: string;
@@ -20,207 +23,236 @@ interface Product {
   desc?: string;
   descKn?: string;
   allergen?: string;
+  rating?: number;
 }
 
 const TESTIMONIALS = [
-  { name: 'Priya S.', text: 'The Kaju Katli is absolutely divine — tastes exactly like home!', stars: 5 },
-  { name: 'James R.', text: "Best brownies I've ever had. My kids devoured the whole box in minutes.", stars: 5 },
-  { name: 'Anita M.', text: 'Love that everything is organic. Will definitely re-order every week.', stars: 5 },
+  {
+    name: 'Meenakshi Sundaram',
+    location: 'Chennai',
+    text: 'The Srivilliputhur Paalkova was mindblowing! Tasted exactly like the fresh milk paalkova from Southern Tamil Nadu.',
+    stars: 5,
+    verified: 'Verified Buyer',
+  },
+  {
+    name: 'Anand K. Rao',
+    location: 'Bengaluru',
+    text: 'The Kai Murukku was so crisp and cooked in pure ghee. My parents finished the entire packet in one evening!',
+    stars: 5,
+    verified: 'Verified Buyer',
+  },
+  {
+    name: 'Deepa S.',
+    location: 'Hyderabad',
+    text: 'Ordered Nagercoil Banana chips for tea time. Crisp, non-greasy, and fresh aroma when opened.',
+    stars: 5,
+    verified: 'Verified Buyer',
+  },
 ];
 
-/* ── Component ─────────────────────────────────────────────── */
 const Home: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { i18n } = useTranslation();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const addItem = useCartStore((s) => s.addItem);
 
-  // 👈 Dynamic state for products loaded from MongoDB
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Fetch live products from backend
+    // Fetch live products from backend with catalog fallback
     fetch('http://localhost:5000/api/products')
       .then((res) => res.json())
       .then((data: Product[]) => {
-        // Pick top 3 items to show on the Home page
-        setFeaturedProducts(data.slice(0, 3));
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts(SWEETS_CATALOG as Product[]);
+        }
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to fetch sweets from backend:', err);
+        console.log('Using local catalog fallback for sweets:', err);
+        setProducts(SWEETS_CATALOG as Product[]);
         setLoading(false);
       });
   }, []);
 
   const PERKS = [
-    { icon: <Truck size={28} />, title: t('home.perks.freeDelivery'), body: t('home.perks.freeDeliveryBody') },
-    { icon: <Shield size={28} />, title: t('home.perks.organic'), body: t('home.perks.organicBody') },
-    { icon: <Clock size={28} />, title: t('home.perks.madeToOrder'), body: t('home.perks.madeToOrderBody') },
-    { icon: <Heart size={28} />, title: t('home.perks.madeWithLove'), body: t('home.perks.madeWithLoveBody') },
+    {
+      icon: <Truck size={24} />,
+      title: 'Free Express Shipping',
+      body: 'On all orders above ₹499. Fresh batch dispatched within 24h.',
+    },
+    {
+      icon: <ShieldCheck size={24} />,
+      title: '100% Pure Cow Ghee',
+      body: 'Made with fresh Western Ghats milk & natural organic jaggery.',
+    },
+    {
+      icon: <Clock size={24} />,
+      title: 'Made Fresh to Order',
+      body: 'Small batch preparation — never mass factory produced.',
+    },
+    {
+      icon: <Award size={24} />,
+      title: 'Air-Sealed Freshness',
+      body: 'Vacuum aroma lock pouches retain crispiness for 60+ days.',
+    },
   ];
 
   return (
-    <div className="bg-amber-50">
+    <div className="bg-[#FDFBF7] text-[#2C1609]">
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-amber-700 text-white">
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-amber-600/30 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
+      {/* ── HERO SLIDER (Screenshots 1 & 2 Template) ───────────────── */}
+      <HeroSlider />
 
-        <div className="relative max-w-6xl mx-auto px-6 py-20 flex flex-col lg:flex-row items-center gap-12">
-          {/* Text */}
-          <div className="flex-1 text-center lg:text-left">
-            <span className="inline-block bg-amber-500/30 text-amber-200 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
-              {t('home.badge')}
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
-              {t('home.heroHeading1')}<br />
-              <span className="text-amber-300">{t('home.heroHeading2')}</span>
-            </h1>
-            <p className="text-amber-200 text-lg mb-8 max-w-md mx-auto lg:mx-0">
-              {t('home.heroSubtitle')}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Link
-                id="hero-shop-btn"
-                to="/shop"
-                className="flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-7 py-3.5 rounded-xl transition-all hover:scale-105 shadow-lg"
-              >
-                <ShoppingBag size={18} /> {t('home.shopNow')}
-              </Link>
-
-              {!isAuthenticated ? (
-                <button
-                  id="hero-signup-btn"
-                  onClick={() => openAuthModal('signup')}
-                  className="flex items-center justify-center gap-2 border-2 border-amber-300 hover:border-amber-200 hover:bg-amber-800/50 text-white font-semibold px-7 py-3.5 rounded-xl transition-all"
-                >
-                  {t('home.joinFree')} <ChevronRight size={16} />
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 border-2 border-amber-300/50 text-amber-200 px-5 py-3 rounded-xl text-sm">
-                  👋 {t('home.welcomeBack')} <span className="font-bold">{user!.name}</span>!
-                </div>
-              )}
-            </div>
-
-            {/* Social proof */}
-            <div className="flex items-center gap-3 mt-8 justify-center lg:justify-start">
-              <div className="flex -space-x-2">
-                {['A','B','C','D'].map((l) => (
-                  <div key={l} className="w-8 h-8 rounded-full bg-amber-400 border-2 border-amber-800 flex items-center justify-center text-amber-900 font-bold text-xs">
-                    {l}
-                  </div>
-                ))}
-              </div>
-              <div className="text-sm">
-                <span className="text-amber-300 font-bold">2,400+</span>
-                <span className="text-amber-200"> {t('home.happyCustomers')}</span>
-                <div className="flex gap-0.5 mt-0.5">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={12} fill="currentColor" className="text-amber-400" />)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero visual — emoji grid */}
-          <Tilt className="flex-shrink-0 grid grid-cols-3 gap-4 preserve-3d perspective-1000" tiltMaxAngleX={15} tiltMaxAngleY={15} scale={1.05} transitionSpeed={1500}>
-            {['🍫','🍪','🪙','🍮','🧁','🍭'].map((em, i) => (
-              <div
-                key={i}
-                style={{ animationDelay: `${i * 0.15}s` }}
-                className="w-20 h-20 rounded-2xl bg-amber-800/60 backdrop-blur flex items-center justify-center text-4xl shadow-xl transition-all translate-z-30 cursor-default select-none"
-              >
-                {em}
-              </div>
-            ))}
-          </Tilt>
-        </div>
-      </section>
-
-      {/* ── PERKS STRIP ──────────────────────────────────────── */}
-      <section className="bg-white border-y border-amber-100 py-10">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ── PERKS STRIP ("Why 1,00,000+ Families Choose Us") ─────────── */}
+      <section className="bg-[#F6EDE2] border-b border-[#EAD7C0] py-8">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PERKS.map(({ icon, title, body }) => (
-            <div key={title} className="flex flex-col items-center text-center gap-2 group">
-              <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+            <div
+              key={title}
+              className="flex items-start gap-4 p-4 rounded-2xl bg-[#FDFBF7] border border-[#EAD7C0] shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[#8D4E20] text-white flex items-center justify-center shrink-0 shadow-md">
                 {icon}
               </div>
-              <h3 className="font-bold text-amber-950 text-sm">{title}</h3>
-              <p className="text-xs text-amber-700 leading-relaxed">{body}</p>
+              <div>
+                <h3 className="font-extrabold text-[#351608] text-sm font-heritage">{title}</h3>
+                <p className="text-xs text-[#6B3615] leading-relaxed mt-0.5">{body}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── FEATURED PRODUCTS FROM BACKEND ─────────────────── */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="flex items-end justify-between mb-8">
+      {/* ── SHOP BY CATEGORY GRID ───────────────────────────────────── */}
+      <CategoryGrid />
+
+      {/* ── SHOP BY MOOD SELECTOR ───────────────────────────────────── */}
+      <MoodSelector />
+
+      {/* ── FEATURED HANDPICKED SWEETS & SNACKS ────────────────────── */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4 border-b border-[#EAD7C0] pb-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-1">{t('home.handpicked')}</p>
-            <h2 className="text-3xl font-extrabold text-amber-950">{t('home.featuredSweets')}</h2>
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#8D4E20]">
+              FRESH FROM OUR KITCHEN
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#351608] font-heritage mt-1">
+              Handpicked Bestsellers
+            </h2>
           </div>
-          <Link to="/shop" className="flex items-center gap-1 text-sm font-semibold text-amber-700 hover:text-amber-900 transition-colors">
-            {t('home.viewAll')} <ChevronRight size={14} />
+          <Link
+            to="/shop"
+            className="flex items-center gap-1.5 text-sm font-bold text-[#8D4E20] hover:text-[#351608] transition-colors"
+          >
+            View All ({products.length}) <ChevronRight size={16} />
           </Link>
         </div>
 
         {loading ? (
-          <div className="text-center py-10 font-bold text-amber-900">Loading delicious sweets...</div>
+          <div className="text-center py-12 font-bold text-[#8D4E20]">
+            Loading fresh homemade treats...
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {featuredProducts.map((sweet) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.slice(0, 6).map((sweet) => {
               const isKn = i18n.language.startsWith('kn');
-              const displayDesc = isKn ? (sweet.descKn || 'ತಾಜಾ ಹಾಗೂ ರುಚಿಕರವಾದ ತಿಂಡಿ.') : (sweet.desc || 'Fresh and delicious traditional treat.');
-              const displayAllergen = isKn ? `ಶೇಂಗಾ, ಡೈರಿ ಇತ್ಯಾದಿ ಹೊಂದಿದೆ` : `Contains: Nuts / Dairy`;
+              const displayTitle = isKn ? sweet.nameKn : sweet.nameEn;
+              const displayDesc = isKn
+                ? sweet.descKn || 'ತಾಜಾ ಹಾಗೂ ರುಚಿಕರವಾದ ಮನೆಮಾಡಿದ ತಿಂಡಿ.'
+                : sweet.desc || 'Handcrafted traditional recipe prepared fresh daily.';
 
               return (
                 <Tilt
                   key={sweet._id || sweet.id}
-                  className="preserve-3d"
                   perspective={1000}
                   scale={1.02}
                   transitionSpeed={1500}
-                  tiltMaxAngleX={8}
-                  tiltMaxAngleY={8}
+                  tiltMaxAngleX={6}
+                  tiltMaxAngleY={6}
                 >
                   <div
                     id={`featured-card-${sweet.id}`}
-                    className="group bg-white rounded-2xl shadow-md border border-amber-100 overflow-hidden h-full preserve-3d"
-                    style={{ transformStyle: 'preserve-3d' }}
+                    className="bg-[#FDFBF7] rounded-3xl border border-[#EAD7C0] overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full group"
                   >
-                    {/* Card header */}
-                    <div className={`h-40 relative translate-z-20 shadow-lg ${!sweet.imageUrl ? 'bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center text-7xl' : ''}`}>
+                    {/* Card Header Image */}
+                    <div className="h-48 relative overflow-hidden bg-gradient-to-br from-[#F6EDE2] to-[#EAD7C0] flex items-center justify-center">
                       {sweet.imageUrl ? (
-                        <img src={sweet.imageUrl} alt={sweet.nameEn} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <img
+                          src={sweet.imageUrl}
+                          alt={sweet.nameEn}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
                       ) : (
-                        sweet.emoji || '🍬'
+                        <span className="text-7xl select-none">{sweet.emoji || '🍬'}</span>
                       )}
+
                       {sweet.badge && (
-                        <span className="absolute top-3 left-3 bg-amber-800 text-amber-100 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm z-10">
+                        <span className="absolute top-3 left-3 bg-[#8D4E20] text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10">
                           {sweet.badge}
                         </span>
                       )}
+
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#351608] text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <Star size={12} className="text-amber-500 fill-amber-500" />
+                        <span>{sweet.rating || 4.8}</span>
+                      </div>
                     </div>
 
-                    <div className="p-5 translate-z-30">
-                      <h3 className="font-bold text-amber-950 mb-1 drop-shadow-sm">{isKn ? sweet.nameKn : sweet.nameEn}</h3>
-                      <p className="text-xs text-amber-600 font-medium mb-2">{isKn ? sweet.nameEn : sweet.nameKn}</p>
-                      <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider mb-2">
-                        ⚠ {displayAllergen}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">{displayDesc}</p>
-                      <div className="flex items-center justify-between translate-z-20">
-                        <span className="text-xl font-extrabold text-amber-700">₹{sweet.price}</span>
-                        <button
-                          id={`home-add-to-cart-${sweet.id}`}
-                          onClick={() => addItem({ id: sweet.id, name: isKn ? sweet.nameKn : sweet.nameEn, price: sweet.price })}
-                          className="flex items-center gap-1.5 bg-amber-800 hover:bg-amber-900 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:translate-y-0.5 shadow-md active:shadow-sm"
-                        >
-                          <ShoppingBag size={14} /> {t('home.addToBag')}
-                        </button>
+                    {/* Card Body */}
+                    <div className="p-6 flex flex-col flex-1 justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="font-extrabold text-[#351608] text-lg font-heritage">
+                            {displayTitle}
+                          </h3>
+                        </div>
+
+                        <p className="text-xs text-[#8D4E20] font-semibold mb-2">
+                          {isKn ? sweet.nameEn : sweet.nameKn}
+                        </p>
+
+                        <p className="text-[11px] text-[#AB682F] font-bold tracking-wide uppercase mb-3 flex items-center gap-1">
+                          ⚠ Allergen: {sweet.allergen || 'Contains Nuts / Dairy'}
+                        </p>
+
+                        <p className="text-xs text-[#6B3615] leading-relaxed mb-6 line-clamp-2">
+                          {displayDesc}
+                        </p>
+                      </div>
+
+                      {/* Card Footer Price & Add */}
+                      <div className="pt-4 border-t border-[#EAD7C0]/60 flex items-center justify-between">
+                        <div>
+                          <span className="text-xs text-[#8D4E20] block font-medium">Price</span>
+                          <span className="text-2xl font-black text-[#351608]">₹{sweet.price}</span>
+                        </div>
+
+                        {isAuthenticated ? (
+                          <button
+                            id={`home-add-to-cart-${sweet.id}`}
+                            onClick={() =>
+                              addItem({
+                                id: sweet.id,
+                                name: displayTitle,
+                                price: sweet.price,
+                              })
+                            }
+                            className="bg-[#8D4E20] hover:bg-[#6B3615] text-white text-xs font-bold px-5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                          >
+                            <ShoppingBag size={14} /> Add to Bag
+                          </button>
+                        ) : (
+                          <button
+                            id={`home-auth-to-add-${sweet.id}`}
+                            onClick={() => openAuthModal('signin')}
+                            className="bg-[#F6EDE2] hover:bg-[#EAD7C0] text-[#351608] text-xs font-bold px-4 py-2.5 rounded-xl border border-[#D8B48F] flex items-center gap-1.5 transition-all shadow-sm"
+                          >
+                            <Lock size={14} /> Sign In to Buy
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -231,51 +263,47 @@ const Home: React.FC = () => {
         )}
       </section>
 
-      {/* ── AUTH CTA BANNER ──────────────────────────────────── */}
-      {!isAuthenticated && (
-        <section className="max-w-6xl mx-auto px-6 pb-10">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-800 to-amber-600 text-white px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="absolute right-0 top-0 bottom-0 w-48 opacity-10 text-[120px] leading-none select-none pointer-events-none flex items-center justify-end pr-4">
-              🍬
-            </div>
-            <div>
-              <h2 className="text-2xl font-extrabold mb-1">{t('home.memberOffer')}</h2>
-              <p className="text-amber-200 text-sm">{t('home.memberOfferSub')}</p>
-            </div>
-            <div className="flex gap-3 flex-shrink-0">
-              <button
-                id="cta-signup-btn"
-                onClick={() => openAuthModal('signup')}
-                className="bg-amber-300 hover:bg-amber-200 text-amber-900 font-bold px-6 py-3 rounded-xl transition-colors"
-              >
-                {t('home.signUpFree')}
-              </button>
-              <button
-                id="cta-signin-btn"
-                onClick={() => openAuthModal('signin')}
-                className="border-2 border-amber-300 hover:bg-amber-700/50 text-white font-semibold px-5 py-3 rounded-xl transition-colors"
-              >
-                {t('navbar.signIn')}
-              </button>
-            </div>
+      {/* ── CUSTOMER REVIEWS & SOCIAL PROOF ─────────────────────────── */}
+      <section className="bg-[#4D230D] text-[#FDFBF7] py-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#E8D2AC]">
+              TESTIMONIALS
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-heritage mt-1">
+              Loved By 1,00,000+ Families
+            </h2>
+            <p className="text-xs text-[#D8B48F] mt-2">
+              Here is what our customers say about our authentic regional taste.
+            </p>
           </div>
-        </section>
-      )}
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────── */}
-      <section className="bg-amber-900 text-white py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-extrabold text-center mb-10 text-amber-100">{t('home.customersSay')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ name, text, stars }) => (
-              <div key={name} className="bg-amber-800/60 rounded-2xl p-6 border border-amber-700/50">
-                <div className="flex gap-0.5 mb-3">
-                  {[...Array(stars)].map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" className="text-amber-400" />
-                  ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {TESTIMONIALS.map((item) => (
+              <div
+                key={item.name}
+                className="bg-[#351608] rounded-3xl p-6 border border-[#6B3615] shadow-lg flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(item.stars)].map((_, i) => (
+                      <Star key={i} size={16} className="text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-xs sm:text-sm text-[#FDFBF7] leading-relaxed italic mb-6">
+                    "{item.text}"
+                  </p>
                 </div>
-                <p className="text-amber-100 text-sm leading-relaxed mb-4">"{text}"</p>
-                <p className="font-bold text-amber-300 text-sm">— {name}</p>
+
+                <div className="pt-4 border-t border-[#4D230D] flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-sm text-[#E8D2AC]">{item.name}</h4>
+                    <p className="text-[10px] text-[#D8B48F]">{item.location}</p>
+                  </div>
+                  <span className="bg-[#6B3615] text-[#E8D2AC] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#D8B48F]/20">
+                    ✓ {item.verified}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

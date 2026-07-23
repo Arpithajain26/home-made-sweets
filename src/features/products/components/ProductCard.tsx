@@ -1,6 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Lock } from 'lucide-react';
 import { useCartStore } from '../../cart/store/useCartStore';
+import { useAuth } from '../../../context/AuthContext';
 import { formatCurrency } from '../../../utils/formatters';
 import Tilt from 'react-parallax-tilt';
 
@@ -16,6 +18,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, description, allergen, imageUrl }) => {
   const { t } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
+  const { isAuthenticated, openAuthModal } = useAuth();
 
   return (
     <Tilt
@@ -53,13 +56,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, description,
 
         <div className="flex items-center justify-between pt-2 border-t border-amber-50 translate-z-20">
           <span className="text-xl font-bold text-amber-700">{formatCurrency(price)}</span>
-          <button
-            id={`add-to-cart-${id}`}
-            onClick={() => addItem({ id, name, price })}
-            className="bg-amber-800 hover:bg-amber-900 hover:translate-y-0.5 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md active:shadow-sm"
-          >
-            {t('shop.addToBag')}
-          </button>
+          {isAuthenticated ? (
+            <button
+              id={`add-to-cart-${id}`}
+              onClick={() => addItem({ id, name, price })}
+              className="bg-amber-800 hover:bg-amber-900 hover:translate-y-0.5 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md active:shadow-sm"
+            >
+              {t('shop.addToBag')}
+            </button>
+          ) : (
+            <button
+              id={`auth-to-add-${id}`}
+              onClick={() => openAuthModal('signin')}
+              className="flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-2 rounded-lg text-xs font-bold transition-all border border-amber-300"
+            >
+              <Lock size={14} /> Login to Add
+            </button>
+          )}
         </div>
       </div>
     </Tilt>

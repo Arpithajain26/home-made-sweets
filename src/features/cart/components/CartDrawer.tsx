@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, ShoppingBag } from 'lucide-react';
+import { X, ShoppingBag, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/useCartStore';
+import { useAuth } from '../../../context/AuthContext';
 import CartItem from './CartItem';
 import { formatCurrency } from '../../../utils/formatters';
 import { Link } from 'react-router-dom';
@@ -14,6 +15,7 @@ interface CartDrawerProps {
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const { items, getTotalPrice, clearCart } = useCartStore();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const total = getTotalPrice();
 
   return (
@@ -71,14 +73,27 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               <span>{t('cart.total')}</span>
               <span>{formatCurrency(total)}</span>
             </div>
-            <Link
-              id="checkout-link"
-              to="/checkout"
-              onClick={onClose}
-              className="block w-full bg-amber-800 hover:bg-amber-900 text-white text-center py-2.5 rounded-lg font-semibold transition-colors"
-            >
-              {t('cart.proceedToCheckout')}
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                id="checkout-link"
+                to="/checkout"
+                onClick={onClose}
+                className="block w-full bg-amber-800 hover:bg-amber-900 text-white text-center py-2.5 rounded-lg font-semibold transition-colors"
+              >
+                {t('cart.proceedToCheckout')}
+              </Link>
+            ) : (
+              <button
+                id="cart-login-btn"
+                onClick={() => {
+                  onClose();
+                  openAuthModal('signin');
+                }}
+                className="flex items-center justify-center gap-2 w-full bg-amber-800 hover:bg-amber-900 text-white text-center py-2.5 rounded-lg font-semibold transition-colors"
+              >
+                <Lock size={16} /> Sign In to Checkout
+              </button>
+            )}
             <button
               id="clear-cart-btn"
               onClick={clearCart}

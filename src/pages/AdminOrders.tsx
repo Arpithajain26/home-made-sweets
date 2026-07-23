@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface OrderItem {
   id: string;
@@ -24,6 +26,7 @@ const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_
 const API_URL = rawApiUrl.replace(/\/+$/, "");
 
 const AdminOrders: React.FC = () => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,6 +65,24 @@ const AdminOrders: React.FC = () => {
       console.error('Failed to update status', err);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-8 bg-amber-50 min-h-screen flex flex-col items-center justify-center text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-800">
+          <Lock size={32} />
+        </div>
+        <h1 className="text-3xl font-extrabold text-amber-950">Admin Authentication Required</h1>
+        <p className="text-amber-800">Please sign in with your account to access the admin dashboard.</p>
+        <button
+          onClick={() => openAuthModal('signin')}
+          className="bg-amber-800 text-white px-6 py-2.5 rounded-xl hover:bg-amber-900 font-semibold shadow-md transition-colors"
+        >
+          Sign In as Admin
+        </button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

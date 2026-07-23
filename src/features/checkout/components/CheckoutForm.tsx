@@ -157,7 +157,10 @@ const CheckoutForm: React.FC = () => {
       }
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_dummyKey",
+        key:
+          razorpayOrder.key ||
+          import.meta.env.VITE_RAZORPAY_KEY_ID ||
+          "rzp_test_TGakiCn3THN42i",
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency || "INR",
         name: "SweetDelights",
@@ -198,10 +201,12 @@ const CheckoutForm: React.FC = () => {
       rzp.open();
     } catch (error: any) {
       console.error("❌ Checkout Error:", error);
-      alert(
-        error?.message ||
-          "Error processing online payment. Make sure your backend server is active and Razorpay keys are configured.",
-      );
+      const errorMessage =
+        error?.message === "Failed to fetch"
+          ? "Could not connect to backend server on port 5000. Please ensure 'node server.js' is running!"
+          : error?.message ||
+            "Error processing online payment. Make sure your backend server is active and Razorpay keys are configured.";
+      alert(errorMessage);
     } finally {
       setSubmitting(false);
     }

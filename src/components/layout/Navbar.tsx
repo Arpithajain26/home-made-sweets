@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import TrackOrderModal from '../modals/TrackOrderModal';
 import DistributorModal from '../modals/DistributorModal';
+import { useProducts } from '../../features/products/hooks/useProducts';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,26 @@ const Navbar: React.FC = () => {
   const [categoryDropdown, setCategoryDropdown] = useState(false);
   const [moodDropdown, setMoodDropdown] = useState(false);
 
+  // Live search suggestions
+  const { products } = useProducts();
+  const searchSuggestions = searchQuery.trim().length >= 2
+    ? products.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.nameEn.toLowerCase().includes(q) ||
+          p.nameKn.toLowerCase().includes(q) ||
+          p.labelEn.toLowerCase().includes(q) ||
+          (p.desc && p.desc.toLowerCase().includes(q))
+        );
+      }).slice(0, 6)
+    : [];
+
+  useEffect(() => {
+    const handleOpenCart = () => setCartOpen(true);
+    window.addEventListener('open-cart', handleOpenCart);
+    return () => window.removeEventListener('open-cart', handleOpenCart);
+  }, []);
+
   const openDistributor = (titleText: string) => {
     setDistributorTitle(titleText);
     setDistributorModalOpen(true);
@@ -42,9 +63,16 @@ const Navbar: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
       setSearchOpen(false);
     }
+  };
+
+  const handleSuggestionClick = (productName: string) => {
+    navigate(`/shop?search=${encodeURIComponent(productName)}`);
+    setSearchQuery('');
+    setSearchOpen(false);
   };
 
   return (
@@ -195,7 +223,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* RIGHT UTILITY ICONS (Search, Profile, Cart) */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3 shrink-0">
             
             {/* Search Toggle */}
             <button
@@ -212,14 +240,14 @@ const Navbar: React.FC = () => {
             {/* User Profile / Auth */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 bg-[#F6EDE2] border border-[#EAD7C0] px-3 py-1.5 rounded-xl">
+                <Link to="/profile" className="flex items-center gap-2 bg-[#F6EDE2] border border-[#EAD7C0] px-3 py-1.5 rounded-xl hover:bg-[#EAD7C0] transition-colors cursor-pointer">
                   <div className="w-6 h-6 rounded-full bg-[#8D4E20] text-white flex items-center justify-center font-bold text-xs">
                     {user!.name.charAt(0)}
                   </div>
                   <span className="text-xs font-bold text-[#351608] hidden sm:block truncate max-w-[90px]">
                     {user!.name}
                   </span>
-                </div>
+                </Link>
                 <button
                   onClick={logout}
                   title="Logout"
@@ -242,7 +270,7 @@ const Navbar: React.FC = () => {
             <button
               id="open-cart-btn"
               onClick={() => setCartOpen(true)}
-              className="relative bg-[#351608] hover:bg-[#4D230D] text-[#FDFBF7] p-2.5 rounded-xl transition-all flex items-center gap-2 shadow-md hover:scale-105"
+              className="relative bg-[#351608] hover:bg-[#4D230D] text-[#FDFBF7] p-2.5 rounded-xl transition-all flex items-center gap-2 shadow-md hover:scale-105 shrink-0"
             >
               <ShoppingBag size={20} />
               <span className="hidden sm:inline font-bold text-xs">Bag</span>
@@ -268,22 +296,54 @@ const Navbar: React.FC = () => {
         {/* EXPANDABLE SEARCH OVERLAY */}
         {searchOpen && (
           <div className="border-t border-[#EAD7C0] bg-[#FDFBF7] py-3 px-6 animate-fade-in">
-            <form onSubmit={handleSearch} className="max-w-3xl mx-auto flex gap-2">
-              <input
-                type="text"
-                autoFocus
-                placeholder="Search Shenga Undi, Rave Undi, Chakkuli, Holige..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-white border border-[#D8B48F] rounded-xl px-4 py-2 text-sm text-[#351608] focus:outline-none focus:ring-2 focus:ring-[#8D4E20]"
-              />
-              <button
-                type="submit"
-                className="bg-[#8D4E20] hover:bg-[#6B3615] text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm"
-              >
-                Search
-              </button>
-            </form>
+            <div className="max-w-3xl mx-auto relative">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Search Shenga Undi, Rave Undi, Chakkuli, Holige..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 bg-white border border-[#D8B48F] rounded-xl px-4 py-2 text-sm text-[#351608] focus:outline-none focus:ring-2 focus:ring-[#8D4E20]"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#8D4E20] hover:bg-[#6B3615] text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm"
+                >
+                  Search
+                </button>
+              </form>
+
+              {/* Live search suggestions dropdown */}
+              {searchSuggestions.length > 0 && (
+                <ul className="absolute left-0 right-16 mt-1 bg-white border border-[#EAD7C0] rounded-xl shadow-xl z-50 overflow-hidden">
+                  {searchSuggestions.map((product) => (
+                    <li key={product.id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSuggestionClick(product.nameEn)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#F6EDE2] transition-colors text-left"
+                      >
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.nameEn}
+                            className="w-8 h-8 rounded-lg object-cover border border-[#EAD7C0] shrink-0"
+                          />
+                        ) : (
+                          <span className="w-8 h-8 flex items-center justify-center text-lg shrink-0">{product.emoji || '🍬'}</span>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-[#351608] truncate">{product.nameEn}</p>
+                          <p className="text-[10px] text-[#8D4E20] font-medium">{product.nameKn} · ₹{product.price}</p>
+                        </div>
+                        <Search size={14} className="text-[#D8B48F] shrink-0" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
 

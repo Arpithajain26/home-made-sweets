@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useCartStore } from '../../cart/store/useCartStore';
 import { useAuth } from '../../../context/AuthContext';
-import { SWEETS_CATALOG } from '../../../data/catalog';
+import { useProducts } from '../hooks/useProducts';
 import { Star, Search, Lock } from 'lucide-react';
 
 const CATEGORY_LABEL_EN: Record<string, string> = {
@@ -18,16 +19,30 @@ const CATEGORY_LABEL_KN: Record<string, string> = {
 
 const ProductGrid: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const addItem = useCartStore((state) => state.addItem);
   const { isAuthenticated, openAuthModal } = useAuth();
   const isKn = i18n.language.startsWith('kn');
 
+  const { products, loading, error } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'sweet' | 'savory'>('all');
 
+  // Sync local state with URL query parameters (?search=, ?category=)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlCategory = searchParams.get('category');
+
+    if (urlSearch) setSearchQuery(urlSearch);
+
+    if (urlCategory === 'sweet' || urlCategory === 'savory') {
+      setSelectedCategory(urlCategory);
+    }
+  }, [searchParams]);
+
   const categories = ['sweet', 'savory'] as const;
 
-  const filteredCatalog = SWEETS_CATALOG.filter((sweet) => {
+  const filteredCatalog = products.filter((sweet) => {
     // Filter by category
     if (selectedCategory !== 'all' && sweet.category !== selectedCategory) return false;
     
@@ -40,6 +55,13 @@ const ProductGrid: React.FC = () => {
       sweet.labelEn.toLowerCase().includes(query)
     );
   });
+
+  if (loading) {
+    return <div className="text-center py-12 text-amber-700">Loading...</div>;
+  }
+  if (error) {
+    return <div className="text-center py-12 text-red-600">Error: {error}</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 pb-10 space-y-8">
@@ -155,7 +177,10 @@ const ProductGrid: React.FC = () => {
                         {isAuthenticated ? (
                           <button
                             id={`add-to-cart-${sweet.id}`}
-                            onClick={() => addItem({ id: sweet.id, name: isKn ? sweet.nameKn : sweet.labelEn, price: sweet.price })}
+                            onClick={() => {
+                              addItem({ id: sweet.id, name: isKn ? sweet.nameKn : sweet.labelEn, price: sweet.price });
+                              window.dispatchEvent(new Event('open-cart'));
+                            }}
                             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-white shadow-sm ${
                               cat === 'sweet'
                                 ? 'bg-amber-800 hover:bg-amber-900'

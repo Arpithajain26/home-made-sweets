@@ -29,11 +29,7 @@ declare global {
   }
 }
 
-const rawApiUrl =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:5000";
-const API_URL = rawApiUrl.replace(/\/+$/, "");
+import { API_BASE_URL } from "../../../services/apiClient";
 
 const CheckoutForm: React.FC = () => {
   const { t } = useTranslation();
@@ -53,7 +49,7 @@ const CheckoutForm: React.FC = () => {
   // Helper function to save order details to Express / MongoDB
   const saveOrderToBackend = async (orderData: any) => {
     try {
-      const response = await fetch(`${API_URL}/api/orders`, {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +131,7 @@ const CheckoutForm: React.FC = () => {
       }
 
       // MODE B: ONLINE PAYMENTS (UPI / Card via Razorpay)
-      const res = await fetch(`${API_URL}/api/payment/create-order`, {
+      const res = await fetch(`${API_BASE_URL}/payment/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: total }),
@@ -168,7 +164,7 @@ const CheckoutForm: React.FC = () => {
         order_id: razorpayOrder.id,
         handler: async (response: any) => {
           try {
-            const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
+            const verifyRes = await fetch(`${API_BASE_URL}/payment/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(response),

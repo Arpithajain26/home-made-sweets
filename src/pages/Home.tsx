@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Star, Truck, ShieldCheck, Clock, Lock, ChevronRight, Award } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,23 +7,8 @@ import { useCartStore } from '../features/cart/store/useCartStore';
 import HeroSlider from '../components/home/HeroSlider';
 import CategoryGrid from '../components/home/CategoryGrid';
 import MoodSelector from '../components/home/MoodSelector';
-import { SWEETS_CATALOG } from '../data/catalog';
+import { useProducts } from '../features/products/hooks/useProducts';
 
-interface Product {
-  _id?: string;
-  id: string;
-  nameEn: string;
-  nameKn: string;
-  price: number;
-  category: string;
-  imageUrl?: string;
-  emoji?: string;
-  badge?: string;
-  desc?: string;
-  descKn?: string;
-  allergen?: string;
-  rating?: number;
-}
 
 const TESTIMONIALS = [
   {
@@ -54,27 +39,8 @@ const Home: React.FC = () => {
   const { isAuthenticated, openAuthModal } = useAuth();
   const addItem = useCartStore((s) => s.addItem);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { products, loading } = useProducts();
 
-  useEffect(() => {
-    // Fetch live products from backend with catalog fallback
-    fetch('http://localhost:5000/api/products')
-      .then((res) => res.json())
-      .then((data: Product[]) => {
-        if (data && data.length > 0) {
-          setProducts(data);
-        } else {
-          setProducts(SWEETS_CATALOG as Product[]);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log('Using local catalog fallback for sweets:', err);
-        setProducts(SWEETS_CATALOG as Product[]);
-        setLoading(false);
-      });
-  }, []);
 
   const PERKS = [
     {
@@ -166,7 +132,7 @@ const Home: React.FC = () => {
 
                 return (
                   <div
-                    key={sweet._id || sweet.id}
+                    key={sweet.id}
                     id={`featured-card-${sweet.id}`}
                     className="bg-[#351608] rounded-3xl border border-[#6B3615] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full group"
                   >
@@ -226,13 +192,14 @@ const Home: React.FC = () => {
                           {isAuthenticated ? (
                             <button
                               id={`home-add-to-cart-${sweet.id}`}
-                              onClick={() =>
+                              onClick={() => {
                                 addItem({
                                   id: sweet.id,
                                   name: displayTitle,
                                   price: sweet.price,
-                                })
-                              }
+                                });
+                                window.dispatchEvent(new Event('open-cart'));
+                              }}
                               className="bg-[#8D4E20] hover:bg-[#AB682F] text-white text-xs font-bold px-5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                             >
                               <ShoppingBag size={14} /> Add to Bag

@@ -2,12 +2,20 @@ import apiClient from '../../../services/apiClient';
 
 export interface Product {
   id: string;
-  name: string;
+  emoji?: string;
+  category: string;
+  nameKn: string;
+  nameEn: string;
+  labelEn: string;
   price: number;
-  description: string;
   allergen?: string;
+  allergenKn?: string;
+  desc: string;
+  descKn: string;
+  badge?: string;
+  rating?: number;
+  reviewsCount?: number;
   imageUrl?: string;
-  category?: string;
 }
 
 /** Fetch all available products */

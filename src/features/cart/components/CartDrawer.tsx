@@ -18,6 +18,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { isAuthenticated, openAuthModal } = useAuth();
   const total = getTotalPrice();
 
+  // Lock body scroll when cart is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   return (
     <>
       {/* Backdrop */}
@@ -34,7 +44,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       <aside
         id="cart-drawer"
         aria-label="Shopping cart"
-        className={`fixed top-0 right-0 h-full w-80 max-w-full bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[calc(100vw-1rem)] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

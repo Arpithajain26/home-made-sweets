@@ -82,8 +82,8 @@ const Navbar: React.FC = () => {
           
           {/* BRAND LOGO — Desi Snack House / SweetDelights */}
           <Link to="/" className="flex items-center gap-3 shrink-0 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8D4E20] to-[#4D230D] p-1 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center border-2 border-[#D8B48F]">
-              <span className="text-2xl select-none">🪔</span>
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8D4E20] to-[#4D230D] p-0.5 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center border-2 border-[#D8B48F] overflow-hidden">
+              <img src="/images/raghavendra-swamy.jpg" alt="Raghavendraswamy" className="w-full h-full object-cover rounded-xl" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl sm:text-2xl font-black tracking-tight text-[#351608] font-heritage leading-none uppercase">

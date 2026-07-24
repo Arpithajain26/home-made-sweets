@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchProducts, type Product } from '../services/productApi';
+import { SWEETS_CATALOG } from '../../../data/catalog';
 
 interface UseProductsResult {
   products: Product[];
@@ -21,10 +22,17 @@ export const useProducts = (): UseProductsResult => {
 
     fetchProducts()
       .then((data) => {
-        if (!cancelled) setProducts(data);
+        if (!cancelled) {
+          // Filter out "Banana Chips" from backend data
+          const filtered = data.filter(
+            (p) => !p.nameEn.toLowerCase().includes('banana chip')
+          );
+          setProducts(filtered.length > 0 ? filtered : SWEETS_CATALOG as unknown as Product[]);
+        }
       })
-      .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Unknown error');
+      .catch(() => {
+        // Fallback to local catalog when API fails
+        if (!cancelled) setProducts(SWEETS_CATALOG as unknown as Product[]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
